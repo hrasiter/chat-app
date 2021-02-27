@@ -21,6 +21,7 @@ const port = process.env.PORT || 3000
 io.on('connection', (socket)=> {
     console.log('New connection')
     socket.emit('message', 'Welcome!');
+    socket.broadcast.emit('message', 'A new user has joined!')
     // socket.emit('countUpdated', count)
 
     // socket.on('increment', ()=>{
@@ -33,6 +34,14 @@ io.on('connection', (socket)=> {
     socket.on('sendMessage', (message)=>{
         console.log('message received ', message)
         io.emit('message', message)
+    })
+
+    socket.on('sendLocation', (position)=>{
+        socket.broadcast.emit('message', `https://google.com/maps?q=${position.latitude},${position.longitude}`)
+    })
+
+    socket.on('disconnect', ()=>{
+        io.emit('message', 'A user has left.')
     })
 })
 
