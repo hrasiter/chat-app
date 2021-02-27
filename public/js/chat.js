@@ -1,20 +1,33 @@
 const socket = io()
 
-const form = document.querySelector('#message-form')
-//const input = document.querySelector('input')
-form.addEventListener('submit', (e)=>{
+const $messageForm = document.querySelector('#message-form')
+const $messageFormInput = $messageForm.querySelector('input')
+const $messageFormButton = $messageForm.querySelector('button')
+const $sendLocationButton = document.querySelector('#send-location')
+const $messages = document.querySelector('#messages')
+
+
+//Templates
+const messageTemplate = document.querySelector('#message-template').innerHTML
+const locationTemplate = document.querySelector('#location-template').innerHTML
+$messageForm.addEventListener('submit', (e)=>{
     e.preventDefault() // prevents default refresh page action
+   
+    $messageFormButton.setAttribute('disabled', 'disabled')
     //const message = input.value
     const message = e.target.elements.message.value
-    socket.emit('sendMessage',message)
+    socket.emit('sendMessage',message, (error)=>{
+        $messageFormButton.removeAttribute('disabled')
+        $messageFormInput.value=''
+        $messageFormInput.focus()
+        if(error){
+            return console.log(error)
+        }
+    })
 })
 
-socket.on('message', (message)=>{
-    console.log(message)
-})
-
-document.querySelector('#send-location').addEventListener('click', (e)=>{
-    
+$sendLocationButton.addEventListener('click', (e)=>{
+    $sendLocationButton.setAttribute('disabled', 'disabled')
     if(!navigator.geolocation){
         return alert('Geolocation is not supported by your browser')
     }
@@ -23,6 +36,23 @@ document.querySelector('#send-location').addEventListener('click', (e)=>{
         socket.emit('sendLocation', {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
+        }, ()=>{
+            $sendLocationButton.removeAttribute('disabled')          
         })
     })
+})
+
+socket.on('message', (message)=>{
+    const  html = Mustache.render(messageTemplate, {
+        message
+    })
+    $messages.insertAdjacentHTML('beforeend', html)
+})
+
+socket.on('locationMessage', (locationurl)=>{
+    const html = Mustache.render(locationTemplate, {
+        locationurl
+    })
+    $messages.insertAdjacentHTML('beforeend', html)
+
 })
