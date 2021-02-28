@@ -44,14 +44,16 @@ $sendLocationButton.addEventListener('click', (e)=>{
 
 socket.on('message', (message)=>{
     const  html = Mustache.render(messageTemplate, {
-        message
+        message: message.text,
+        createdAt: moment(message.createdAt).format('h:mm:ss a')
     })
     $messages.insertAdjacentHTML('beforeend', html)
 })
 
 socket.on('locationMessage', (locationurl)=>{
     const html = Mustache.render(locationTemplate, {
-        locationurl
+        url: locationurl.url,
+        createdAt: moment(locationurl.createdAt).format('h:mm:ss a')
     })
     $messages.insertAdjacentHTML('beforeend', html)
 
